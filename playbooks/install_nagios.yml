@@ -1,5 +1,5 @@
 # ##
-# ansible-playbook playbooks/install_nagios.yml -i hosts --ask-vault-pass --extra-vars "ansible_sudo_pass=YOUR_REMOTE_PASSWD"
+# ansible-playbook playbooks/install_nagios.yml -i playbooks/hosts --ask-vault-pass --extra-vars "ansible_sudo_pass=YOUR_REMOTE_PASSWD"
 # ##
 
   - name: Install Nagios on Debian Stretch

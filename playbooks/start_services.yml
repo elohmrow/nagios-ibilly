@@ -1,0 +1,19 @@
+# ##
+# ansible-playbook playbooks/start_services.yml -i playbooks/hosts --ask-vault-pass --extra-vars "ansible_sudo_pass=YOUR_REMOTE_PASSWD"
+# ##
+
+  - name: Start Nagios on Debian Stretch
+    hosts: monitors
+    connection: local
+    gather_facts: False
+
+    tasks:
+      # [1]
+      - name: Start Apache
+        command: systemctl restart apache2.service
+        become: yes
+
+      # [2]
+      - name: Start Nagios
+        command: systemctl start nagios.service
+        become: yes
