@@ -1,0 +1,107 @@
+# [0]
+- name: iptables open 80	# todo: use ansible iptables module
+  command: iptables -I INPUT -p tcp --destination-port 80 -j ACCEPT
+  become: yes
+- name: prevent the iptables-peristent install dialog
+  debconf: name=iptables-persistent question={{ item }} vtype=boolean value=true
+  with_items:
+    - iptables-persistent/autosave_v4
+    - iptables-persistent/autosave_v6
+
+# [1]
+- name: Install list of packages
+  apt: name={{item}} state=present
+  with_items:
+    - autoconf
+    - gcc
+    - libc6
+    - make
+    - wget
+    - unzip
+    - apache2
+    - apache2-utils
+    - php
+    - libgd-dev
+    - iptables-persistent
+  become: yes
+
+# [2]
+- name: Download and unpack Nagios
+  get_url:
+    url: https://github.com/NagiosEnterprises/nagioscore/archive/nagios-{{ NAGIOS_VERSION }}.tar.gz
+    dest: /tmp/nagioscore.tar.gz
+- name:
+  file:
+    path: /tmp/nagioscore
+    state: directory
+    mode: 0755
+- name: Extract nagioscore.tar.gz into /tmp/nagioscore
+  unarchive:
+    src: /tmp/nagioscore.tar.gz
+    dest: /tmp/nagioscore
+
+# [3]
+- name: Change to Nagios Download Directory
+  command: chdir=/tmp/nagioscore-nagios-{{ NAGIOS_VERSION }} ./configure --with-httpd-conf=/etc/apache2/sites-enabled
+  become: yes
+- name: Make All Nagios
+  make:
+    chdir: /tmp/nagioscore-nagios-{{ NAGIOS_VERSION }}
+    target: all
+  become: yes
+ 
+# [4]
+- name: Add Nagios User and add to Groups
+  user:
+    name: nagios
+    groups: nagios,www-data
+  become: yes
+
+# [5]
+- name: Make Install Nagios
+  make:
+    chdir: /tmp/nagioscore-nagios-{{ NAGIOS_VERSION }}
+    target: install
+  become: yes
+
+# [6]
+- name: Make Install-Init Nagios
+  make:
+    chdir: /tmp/nagioscore-nagios-{{ NAGIOS_VERSION }}
+    target: install-init
+  become: yes
+- name: Enable Nagios Service
+  command: systemctl enable nagios.service
+  become: yes
+
+# [7]
+- name: Make Install-Commandmode Nagios
+  make:
+    chdir: /tmp/nagioscore-nagios-{{ NAGIOS_VERSION }}
+    target: install-commandmode
+  become: yes
+
+# [8]
+- name: Make Install-Config Nagios
+  make:
+    chdir: /tmp/nagioscore-nagios-{{ NAGIOS_VERSION }}
+    target: install-config
+  become: yes
+
+# [9]
+- name: Make Install-Webconf Nagios
+  make:
+    chdir: /tmp/nagioscore-nagios-{{ NAGIOS_VERSION }}
+    target: install-webconf
+  become: yes
+- name: a2enmod rewrite
+  command: a2enmod rewrite
+  become: yes
+- name: a2enmod cgi
+  command: a2enmod cgi
+  become: yes
+
+# [10]
+- name: Set up Nagios Admin Creds
+  command: htpasswd -b -c /usr/local/nagios/etc/htpasswd.users {{ NAGIOS_ADMIN_USER }} {{ NAGIOS_ADMIN_PASS }}
+  become: yes

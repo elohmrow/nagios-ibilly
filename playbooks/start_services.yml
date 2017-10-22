@@ -10,10 +10,14 @@
     tasks:
       # [1]
       - name: Start Apache
-        command: systemctl restart apache2.service
+        service:
+          name: apache2
+          state: started
         become: yes
 
       # [2]
       - name: Start Nagios
-        command: systemctl start nagios.service
+        service:
+          name: nagios
+          state: started
         become: yes
