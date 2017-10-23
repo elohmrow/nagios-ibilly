@@ -1,0 +1,38 @@
+# [1]
+- name: Install list of packages
+  apt: name={{item}} state=present
+  with_items:
+    - libmcrypt-dev
+    - libssl-dev
+    - bc
+    - gawk
+    - dc
+    - build-essential
+    - snmp
+    - libnet-snmp-perl
+    - gettext
+  become: yes
+
+# [2]
+- name: Extract nagios-plugins-release-{{ NAGIOS_PLUGINS_VERSION }}.tar.gz into /tmp/nagios-plugins-release-{{ NAGIOS_PLUGINS_VERSION }}
+  unarchive:
+    src: https://github.com/nagios-plugins/nagios-plugins/archive/release-{{ NAGIOS_PLUGINS_VERSION }}.tar.gz
+    dest: /tmp
+    remote_src: yes
+
+# [3]
+- name: Change to Nagios Plugins Download Directory
+  command: chdir=/tmp/nagios-plugins-release-{{ NAGIOS_PLUGINS_VERSION }} ./tools/setup
+  become: yes
+- name: Configure Nagios Plugins
+  command: chdir=/tmp/nagios-plugins-release-{{ NAGIOS_PLUGINS_VERSION }} ./configure
+  become: yes
+- name: Make Nagios Plugins
+  make:
+    chdir: /tmp/nagios-plugins-release-{{ NAGIOS_PLUGINS_VERSION }}
+  become: yes
+- name: Make All Nagios Plugins
+  make:
+    chdir: /tmp/nagios-plugins-release-{{ NAGIOS_PLUGINS_VERSION }}
+    target: all
+  become: yes
