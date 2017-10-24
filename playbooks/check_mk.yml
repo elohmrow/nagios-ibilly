@@ -1,0 +1,3 @@
+- hosts: monitors
+  roles:
+    - role: check_mk

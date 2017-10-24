@@ -1,0 +1,12 @@
+# [0]
+- name: Install list of packages
+  apt: name={{item}} state=present
+  with_items:
+    - xinetd
+  become: yes
+
+# [1]
+- name: Install check_mk
+  apt:
+    deb: https://mathias-kettner.de/support/1.4.0p15/check-mk-raw-1.4.0p15_0.{{ DIST }}_amd64.deb
+  become: yes
