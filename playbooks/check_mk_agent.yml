@@ -1,0 +1,3 @@
+- hosts: agents
+  roles:
+    - role: check_mk_agent
