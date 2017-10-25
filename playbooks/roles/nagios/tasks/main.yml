@@ -1,5 +1,5 @@
 # [0]
-- name: iptables open 80	# todo: use ansible iptables module
+- name: iptables open 80
   command: iptables -I INPUT -p tcp --destination-port 80 -j ACCEPT
   become: yes
 - name: prevent the iptables-peristent install dialog
@@ -26,19 +26,18 @@
   become: yes
 
 # [2]
-- name: Download and unpack Nagios
-  get_url:
-    url: https://github.com/NagiosEnterprises/nagioscore/archive/nagios-{{ NAGIOS_VERSION }}.tar.gz
-    dest: /tmp/nagioscore.tar.gz
-- name:
+- name: Add /tmp/nagioscore directory 
   file:
     path: /tmp/nagioscore
     state: directory
     mode: 0755
-- name: Extract nagioscore.tar.gz into /tmp/nagioscore
+  become: yes
+- name: Download and unpack Nagios 
   unarchive:
-    src: /tmp/nagioscore.tar.gz
+    src: https://github.com/nagios-plugins/nagios-plugins/archive/release-{{ NAGIOS_PLUGINS_VERSION }}.tar.gz
     dest: /tmp/nagioscore
+    remote_src: yes
+  become: yes
 
 # [3]
 - name: Change to Nagios Download Directory
