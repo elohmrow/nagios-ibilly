@@ -1,0 +1,20 @@
+# [1]
+- name: iptables open 6556
+  command: iptables -I INPUT -p tcp --destination-port 6556 -j ACCEPT
+  become: yes
+
+# [2]
+- name: Install check_mk
+  copy: src=check_mk dest=/etc/xinetd.d/ mode=0644
+  become: yes
+
+# [3]
+- name: Install check_mk_agent
+  copy: src=check_mk_agent dest=/usr/bin/ mode=0755
+  become: yes
+
+# [4]
+- service:
+    name: xinetd
+    state: restarted
+  become: yes
